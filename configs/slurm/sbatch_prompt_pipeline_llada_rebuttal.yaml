@@ -1,0 +1,51 @@
+# LLaDA pipeline with filtering baselines for ICML 2026 rebuttal.
+# Adds posthoc_filter and best_of_n runs (fk_steering is MDLM-only).
+# Set LLAMAGUARD_CHECKPOINT_PATH env var before submitting.
+
+data_catalog: configs/data/catalog_feb_06_llada_trillium.yaml
+
+run:
+  python: python
+  config_name: config
+  output_root: ${oc.env:SCRATCH,/tmp}/safe-text-diffusion/results/prompt_pipeline_llada
+  slug_prefix: llada
+  run_id_prefix: llada
+  model_family: llada
+  model_name: llada-8b-base
+  model_checkpoint: ${oc.env:CHECKPOINT_PATH,''}
+  tokenizer_name: ${oc.env:TOKENIZER_PATH,''}
+  semantic_weight: ${oc.env:SEMANTIC_WEIGHT,1.0}
+  semantic_temp: ${oc.env:SEMANTIC_TEMP,1.0}
+  semantic_sigma: ${oc.env:SEMANTIC_SIGMA,null}
+  semantic_checkpoint: ${oc.env:CHECKPOINT_PATH,''}
+  semantic_embed_attr: ${oc.env:MDLM_EMBED_ATTR,''}
+  gen:
+    sampling_steps: 256
+    max_new_tokens: 256
+    batch_size: 4
+    temperature: 0.0
+  safety_etas: [4]
+  t_start: [0]
+  t_end: [18]
+  # --- Rebuttal baseline variants ---
+  extra_baselines: [posthoc_filter, best_of_n]   # no fk_steering for LLaDA
+  posthoc_filter_n: 8
+  best_of_n_n: 8
+  score:
+    enabled: true
+    config_name: config
+    classifier: llamaguard
+    model: LLaDA-8B-Base
+    batch_size: 8
+    max_new_tokens: 64
+    force: true
+    dry_run: false
+    compute_perplexity: true
+    perplexity_model: gpt2-large
+    perplexity_batch_size: 4
+    perplexity_max_length: 1024
+
+datasets:
+  # - use: beavertails
+  - use: realtoxicity
+  # - use: toxigen

@@ -1,0 +1,30 @@
+tokenizer_name_or_path: /scratch/${USER}/hf_models/gpt2-large
+max_length: 1024
+shard_size: 1024
+seed: 1
+output_dir: artifacts/unsafe_artifacts
+mix_equal_datasets: false
+mix_output_name: unsafe_mixed_equal
+# mix_per_dataset: 1000
+# mix_sample_size: 4000
+mix_shuffle: true
+
+datasets:
+  - source: beavertails
+    split: 330k_train              # options: 330k_train, 330k_test, 30k_train, 30k_test
+    sample_size: 1500              # leave out to use full split
+    # categories: []               # optional. (Keys listed in README.), leave out to include all
+
+  - source: real-toxicity-prompts
+    split: train
+    sample_size: 1500
+    toxicity_threshold: 0.5
+    # toxicity_filters: # see README for available filters
+    #   threat: 0.2
+    #   identity_attack: 0.2
+
+  - source: toxigen
+    config_name: train            # choices: train, annotated, annotations
+    split: train
+    sample_size: 1500
+    roberta_threshold: 0.8

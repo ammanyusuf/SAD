@@ -1,0 +1,34 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Evaluation Run Manifest",
+  "type": "object",
+  "required": ["track", "model", "git_sha", "args", "env", "slurm_ids", "shard_map"],
+  "properties": {
+    "track": {"type": "string", "enum": ["safety", "memorization"]},
+    "model": {"type": "string"},
+    "git_sha": {"type": "string"},
+    "created_at": {"type": "string"},
+    "hostname": {"type": "string"},
+    "args": {"type": "object"},
+    "env": {"type": "object"},
+    "slurm_ids": {
+      "type": "object",
+      "properties": {
+        "job_id": {"type": ["string", "null"]},
+        "array_job_id": {"type": ["string", "null"]},
+        "array_task_id": {"type": ["string", "null"]}
+      }
+    },
+    "shard_map": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["shard_id", "file"],
+        "properties": {
+          "shard_id": {"type": "integer"},
+          "file": {"type": "string"}
+        }
+      }
+    }
+  }
+}

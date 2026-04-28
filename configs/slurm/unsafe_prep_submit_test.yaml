@@ -1,0 +1,40 @@
+sweep_config: configs/unsafe_prep/unsafe_prompt_sweep.yaml
+jobs: 2
+python: python
+output_root: ${oc.env:UNSAFE_OUTPUT_ROOT,${oc.env:SCRATCH,/scratch}/safe-text-diffusion/artifacts/unsafe_artifacts}
+# tokenizer: ${oc.env:TOKENIZER_NAME_OR_PATH,${oc.env:SCRATCH,/scratch}/hf_models/gpt2-large}
+tokenizer: ${oc.env:TOKENIZER_NAME_OR_PATH,${oc.env:SCRATCH,/scratch}/hf_models/LLaDA-8B-Base}
+max_length: 1024
+shard_size: 1024
+seed: 1
+
+# semantic_cache:
+#   enabled: true
+#   provider: mdlm
+#   checkpoint: ${oc.env:CHECKPOINT_PATH,${oc.env:SCRATCH,/scratch}/models/text-diffusion/mdlm.ckpt}
+#   tokenizer: ${oc.env:TOKENIZER_PATH,${oc.env:SCRATCH,/scratch}/hf_models/gpt2-large}
+#   model_config: third_party/mdlm/configs/config.yaml
+#   mdlm_embed_attr: null
+#   batch_size: 16
+#   device: cuda
+
+# semantic_cache:
+#   enabled: true
+#   provider: mdlm
+#   checkpoint: ${oc.env:CHECKPOINT_PATH,${oc.env:SCRATCH,/scratch}/models/text-diffusion/mdlm.ckpt}
+#   tokenizer: ${oc.env:TOKENIZER_PATH,${oc.env:SCRATCH,/scratch}/hf_models/gpt2-large}
+#   model_config: third_party/mdlm/configs/config.yaml
+#   mdlm_embed_attr: null
+#   batch_size: 16
+#   device: cuda
+
+semantic_cache:
+  enabled: true
+  provider: hf
+  checkpoint: ${oc.env:CHECKPOINT_PATH,${oc.env:SCRATCH,/scratch}/hf_models/LLaDA-8B-Base}
+  encoder: ${oc.env:SCRATCH,/scratch}/hf_models/LLaDA-8B-Base
+  tokenizer: ${oc.env:TOKENIZER_PATH,${oc.env:SCRATCH,/scratch}/hf_models/LLaDA-8B-Base}
+  model_config: null
+  mdlm_embed_attr: null
+  batch_size: 1
+  device: cuda

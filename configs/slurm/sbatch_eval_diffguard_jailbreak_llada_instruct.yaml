@@ -1,0 +1,85 @@
+data_catalog: configs/data/catalog_jailbreak.yaml
+
+run:
+  script: eval_diffuguard.sh
+  config_name: config
+  output_root: ${oc.env:SCRATCH,/tmp}/safe-text-diffusion/results/jailbreak
+  slug_prefix: diffuguard
+  run_id_prefix: diffuguard-llada-instruct
+  model_family: llada
+  model_variant: diffuguard
+  model_name: llada-8b-instruct
+  model_path: ${oc.env:CHECKPOINT_PATH,${oc.env:SCRATCH,/scratch}/hf_models/LLaDA-8B-Instruct}
+  env:
+    PPL_GPT2_MODEL: ${oc.env:PPL_GPT2_MODEL,gpt2}
+  baseline_only: false
+  apply_defense_variants_to_baseline: true
+  base_overrides:
+    - jailbreak.output_name=diffuguard_outputs.json
+    - jailbreak.cfg_scale=0.0
+    - jailbreak.remasking=low_confidence
+    - jailbreak.random_rate=0.0
+    - jailbreak.alpha0=0.3
+    - jailbreak.sp_mode=off
+    - jailbreak.sp_threshold=0.1 # udpated from their hyper-parametr file, aka lambda
+    - jailbreak.refinement_steps=8
+    - jailbreak.remask_ratio=0.9 # aka gamma
+    - jailbreak.suppression_value=1000000.0
+    - jailbreak.correct_only_first_block=true
+    - jailbreak.fill_all_masks=false
+    - jailbreak.debug_print=true
+    - jailbreak.auto_pick_gpu=true
+    - jailbreak.mask_id=126336
+    - jailbreak.mask_counts=36
+  gen:
+    sampling_steps: 64
+    max_new_tokens: 128
+    block_length: 128
+    temperature: 0.5
+  safety_etas: [2.0, 4.0, 8.0] # updated: 0.25/0.5/1.0 too low — PAD best at eta=8.0, t_end=64
+  t_start: [0]
+  t_end: [64]
+  jailbreak_variants:
+    - name: zeroshot
+      label: zero-shot
+      attack_method: zeroshot
+      overrides:
+        - jailbreak.mask_counts=0 # this is needed as we don't want to fill up with pads
+        - jailbreak.remasking=low_confidence
+    - name: pad
+      label: PAD
+      attack_method: PAD
+    - name: dija
+      label: DIJA
+      attack_method: DIJA
+  jailbreak_defense_variants:
+    - name: self-reminder
+      label: self-reminder
+      defense_method: self-reminder
+    - name: ppl
+      label: ppl-filter
+      defense_method: ppl
+    - name: diffuguard
+      label: diffuguard-hidden-audit
+      defense_method: diffuguard
+      overrides:
+        - jailbreak.sp_mode=hidden
+
+datasets:
+  - use: jailbreak_diffuguard_jbb
+    skip_baseline: false
+  - use: jailbreak_diffuguard_harmbench
+    skip_baseline: false
+  - use: jailbreak_diffuguard_strongreject
+    skip_baseline: false
+  - use: jailbreak_diffuguard_advbench
+    skip_baseline: false
+  - use: jailbreak_diffuguard_wildjailbreak
+    skip_baseline: false
+
+slurm:
+  array: "0-0"
+  time: "04:00:00"
+  mem: "32G"
+  gpus_per_node: a100:1
+  cpus_per_task: 1

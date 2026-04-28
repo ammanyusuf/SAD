@@ -1,0 +1,461 @@
+tokenizer_name_or_path: ${oc.env:TOKENIZER_PATH,''}
+max_length: 1024
+shard_size: 1024
+seed: 1
+output_dir: artifacts/unsafe_artifacts
+mix_equal_datasets: true
+mix_output_name: unsafe_mixed_equal
+mix_per_dataset: 1000
+# mix_sample_size: 4000
+mix_shuffle: true
+
+# mdlm naming
+# datasets:
+  # BeaverTails variants
+  # - source: beavertails
+  #   split: 330k_train
+  #   sample_size: 100
+  #   output_name: beavertails-0100
+  # - source: beavertails
+  #   split: 330k_train
+  #   sample_size: 500
+  #   output_name: beavertails-0500
+  # - source: beavertails
+  #   split: 330k_train
+  #   sample_size: 1000
+  #   output_name: beavertails-1000
+  # - source: beavertails
+  #   split: 330k_train
+  #   sample_size: 1500
+  #   output_name: beavertails-1500
+  # - source: beavertails
+  #   split: 330k_train
+  #   sample_size: 3000
+  #   output_name: beavertails-3000
+  # - source: beavertails
+  #   split: 330k_train
+  #   sample_size: 5000
+  #   output_name: beavertails-5000
+  # - source: beavertails
+  #   split: 330k_train
+  #   sample_size: 10000
+  #   output_name: beavertails-10000
+  # - source: beavertails
+  #   split: 330k_train
+  #   sample_size: 15000
+  #   output_name: beavertails-15000
+  # - source: beavertails
+  #   split: 330k_train
+  #   sample_size: 20000
+  #   output_name: beavertails-20000
+  # - source: beavertails
+  #   split: 330k_train
+  #   sample_size: 25000
+  #   output_name: beavertails-25000
+  # - source: beavertails
+  #   split: 330k_train
+  #   sample_size: 30000
+  #   output_name: beavertails-30000
+  # - source: beavertails
+  #   split: 330k_train
+  #   sample_size: 40000
+  #   output_name: beavertails-40000
+  # - source: beavertails
+  #   split: 330k_train
+  #   sample_size: 50000
+  #   output_name: beavertails-50000
+
+  # RealToxicityPrompts variants
+  # - source: real-toxicity-prompts
+  #   split: train
+  #   sample_size: 100
+  #   toxicity_threshold: 0.7
+  #   output_name: real-toxicity-prompts-0100
+  # - source: real-toxicity-prompts
+  #   split: train
+  #   sample_size: 500
+  #   toxicity_threshold: 0.7
+  #   output_name: real-toxicity-prompts-0500
+  # - source: real-toxicity-prompts
+  #   split: train
+  #   sample_size: 1000
+  #   toxicity_threshold: 0.7
+  #   output_name: real-toxicity-prompts-1000
+  # - source: real-toxicity-prompts
+  #   split: train
+  #   sample_size: 1500
+  #   toxicity_threshold: 0.7
+  #   output_name: real-toxicity-prompts-1500
+  # - source: real-toxicity-prompts
+  #   split: train
+  #   sample_size: 3000
+  #   toxicity_threshold: 0.7
+  #   output_name: real-toxicity-prompts-3000
+  # - source: real-toxicity-prompts
+  #   split: train
+  #   sample_size: 5000
+  #   toxicity_threshold: 0.7
+  #   output_name: real-toxicity-prompts-5000
+  # - source: real-toxicity-prompts
+  #   split: train
+  #   sample_size: 10000
+  #   toxicity_threshold: 0.7
+  #   output_name: real-toxicity-prompts-10000
+  # - source: real-toxicity-prompts
+  #   split: train
+  #   sample_size: 15000
+  #   toxicity_threshold: 0.7
+  #   output_name: real-toxicity-prompts-15000
+  # - source: real-toxicity-prompts
+  #   split: train
+  #   sample_size: 20000
+  #   toxicity_threshold: 0.7
+  #   output_name: real-toxicity-prompts-20000
+  # - source: real-toxicity-prompts
+  #   split: train
+  #   sample_size: 25000
+  #   toxicity_threshold: 0.7
+  #   output_name: real-toxicity-prompts-25000
+  # - source: real-toxicity-prompts
+  #   split: train
+  #   sample_size: 30000
+  #   toxicity_threshold: 0.7
+  #   output_name: real-toxicity-prompts-30000
+  # - source: real-toxicity-prompts
+  #   split: train
+  #   sample_size: 40000
+  #   toxicity_threshold: 0.7
+  #   output_name: real-toxicity-prompts-40000
+  # - source: real-toxicity-prompts
+  #   split: train
+  #   sample_size: 50000
+  #   toxicity_threshold: 0.7
+  #   output_name: real-toxicity-prompts-50000
+
+  # ToxiGen variants
+  # - source: toxigen
+  #   config_name: train
+  #   split: train
+  #   sample_size: 100
+  #   roberta_threshold: 0.8
+  #   output_name: toxigen-0100
+  # - source: toxigen
+  #   config_name: train
+  #   split: train
+  #   sample_size: 500
+  #   roberta_threshold: 0.8
+  #   output_name: toxigen-0500
+  # - source: toxigen
+  #   config_name: train
+  #   split: train
+  #   sample_size: 1000
+  #   roberta_threshold: 0.8
+  #   output_name: toxigen-1000
+  # - source: toxigen
+  #   config_name: train
+  #   split: train
+  #   sample_size: 1500
+  #   roberta_threshold: 0.8
+  #   output_name: toxigen-1500
+  # - source: toxigen
+  #   config_name: train
+  #   split: train
+  #   sample_size: 3000
+  #   roberta_threshold: 0.8
+  #   output_name: toxigen-3000
+  # - source: toxigen
+  #   config_name: train
+  #   split: train
+  #   sample_size: 5000
+  #   roberta_threshold: 0.8
+  #   output_name: toxigen-5000
+  # - source: toxigen
+  #   config_name: train
+  #   split: train
+  #   sample_size: 10000
+  #   roberta_threshold: 0.8
+  #   output_name: toxigen-10000
+  # - source: toxigen
+  #   config_name: train
+  #   split: train
+  #   sample_size: 15000
+  #   roberta_threshold: 0.8
+  #   output_name: toxigen-15000
+  # - source: toxigen
+  #   config_name: train
+  #   split: train
+  #   sample_size: 20000
+  #   roberta_threshold: 0.8
+  #   output_name: toxigen-20000
+  # - source: toxigen
+  #   config_name: train
+  #   split: train
+  #   sample_size: 25000
+  #   roberta_threshold: 0.8
+  #   output_name: toxigen-25000
+  # - source: toxigen
+  #   config_name: train
+  #   split: train
+  #   sample_size: 30000
+  #   roberta_threshold: 0.8
+  #   output_name: toxigen-30000
+  # - source: toxigen
+  #   config_name: train
+  #   split: train
+  #   sample_size: 40000
+  #   roberta_threshold: 0.8
+  #   output_name: toxigen-40000
+  # - source: toxigen
+  #   config_name: train
+  #   split: train
+  #   sample_size: 50000
+  #   roberta_threshold: 0.8
+  #   output_name: toxigen-50000
+
+
+
+datasets:
+  # BeaverTails variants
+  # - source: beavertails
+  #   split: 330k_train
+  #   sample_size: 100
+  #   output_name: beavertails-0100-llada
+  # - source: beavertails
+  #   split: 330k_train
+  #   sample_size: 500
+  #   output_name: beavertails-0500-llada
+  # - source: beavertails
+  #   split: 330k_train
+  #   sample_size: 1000
+  #   output_name: beavertails-1000-llada
+  # - source: beavertails
+  #   split: 330k_train
+  #   sample_size: 1500
+  #   output_name: beavertails-1500-llada
+  # - source: beavertails
+  #   split: 330k_train
+  #   sample_size: 3000
+  #   output_name: beavertails-3000-llada
+  # - source: beavertails
+  #   split: 330k_train
+  #   sample_size: 5000
+  #   output_name: beavertails-5000-llada
+  # - source: beavertails
+  #   split: 330k_train
+  #   sample_size: 10000
+  #   output_name: beavertails-10000-llada
+  # - source: beavertails
+  #   split: 330k_train
+  #   sample_size: 15000
+  #   output_name: beavertails-15000-llada
+  # - source: beavertails
+  #   split: 330k_train
+  #   sample_size: 20000
+  #   output_name: beavertails-20000-llada
+  # - source: beavertails
+  #   split: 330k_train
+  #   sample_size: 25000
+  #   output_name: beavertails-25000-llada
+  # - source: beavertails
+  #   split: 330k_train
+  #   sample_size: 30000
+  #   output_name: beavertails-30000-llada
+  # - source: beavertails
+  #   split: 330k_train
+  #   sample_size: 40000
+  #   output_name: beavertails-40000-llada
+  # - source: beavertails
+  #   split: 330k_train
+  #   sample_size: 50000
+  #   output_name: beavertails-50000-llada
+
+  # RealToxicityPrompts variants
+  # - source: real-toxicity-prompts
+  #   split: train
+  #   sample_size: 100
+  #   toxicity_threshold: 0.7
+  #   output_name: real-toxicity-prompts-0100-llada
+  # - source: real-toxicity-prompts
+  #   split: train
+  #   sample_size: 500
+  #   toxicity_threshold: 0.7
+  #   output_name: real-toxicity-prompts-0500-llada
+  # - source: real-toxicity-prompts
+  #   split: train
+  #   sample_size: 1000
+  #   toxicity_threshold: 0.7
+  #   output_name: real-toxicity-prompts-1000-llada
+  # - source: real-toxicity-prompts
+  #   split: train
+  #   sample_size: 1500
+  #   toxicity_threshold: 0.7
+  #   output_name: real-toxicity-prompts-1500-llada
+  # - source: real-toxicity-prompts
+  #   split: train
+  #   sample_size: 3000
+  #   toxicity_threshold: 0.7
+  #   output_name: real-toxicity-prompts-3000-llada
+  # - source: real-toxicity-prompts
+  #   split: train
+  #   sample_size: 5000
+  #   toxicity_threshold: 0.7
+  #   output_name: real-toxicity-prompts-5000-llada
+  # - source: real-toxicity-prompts
+  #   split: train
+  #   sample_size: 10000
+  #   toxicity_threshold: 0.7
+  #   output_name: real-toxicity-prompts-10000-llada
+  # - source: real-toxicity-prompts
+  #   split: train
+  #   sample_size: 15000
+  #   toxicity_threshold: 0.7
+  #   output_name: real-toxicity-prompts-15000-llada
+  # - source: real-toxicity-prompts
+  #   split: train
+  #   sample_size: 20000
+  #   toxicity_threshold: 0.7
+  #   output_name: real-toxicity-prompts-20000-llada
+  # - source: real-toxicity-prompts
+  #   split: train
+  #   sample_size: 25000
+  #   toxicity_threshold: 0.7
+  #   output_name: real-toxicity-prompts-25000-llada
+  # - source: real-toxicity-prompts
+  #   split: train
+  #   sample_size: 30000
+  #   toxicity_threshold: 0.7
+  #   output_name: real-toxicity-prompts-30000-llada
+  # - source: real-toxicity-prompts
+  #   split: train
+  #   sample_size: 40000
+  #   toxicity_threshold: 0.7
+  #   output_name: real-toxicity-prompts-40000-llada
+  # - source: real-toxicity-prompts
+  #   split: train
+  #   sample_size: 50000
+  #   toxicity_threshold: 0.7
+  #   output_name: real-toxicity-prompts-50000-llada
+
+  # ToxiGen variants
+  # - source: toxigen
+  #   config_name: train
+  #   split: train
+  #   sample_size: 100
+  #   roberta_threshold: 0.8
+  #   output_name: toxigen-0100-llada
+  # - source: toxigen
+  #   config_name: train
+  #   split: train
+  #   sample_size: 500
+  #   roberta_threshold: 0.8
+  #   output_name: toxigen-0500-llada
+  # - source: toxigen
+  #   config_name: train
+  #   split: train
+  #   sample_size: 1000
+  #   roberta_threshold: 0.8
+  #   output_name: toxigen-1000-llada
+  # - source: toxigen
+  #   config_name: train
+  #   split: train
+  #   sample_size: 1500
+  #   roberta_threshold: 0.8
+  #   output_name: toxigen-1500-llada
+  # - source: toxigen
+  #   config_name: train
+  #   split: train
+  #   sample_size: 3000
+  #   roberta_threshold: 0.8
+  #   output_name: toxigen-3000-llada
+  # - source: toxigen
+  #   config_name: train
+  #   split: train
+  #   sample_size: 5000
+  #   roberta_threshold: 0.8
+  #   output_name: toxigen-5000-llada
+  # - source: toxigen
+  #   config_name: train
+  #   split: train
+  #   sample_size: 10000
+  #   roberta_threshold: 0.8
+  #   output_name: toxigen-10000-llada
+  # - source: toxigen
+  #   config_name: train
+  #   split: train
+  #   sample_size: 15000
+  #   roberta_threshold: 0.8
+  #   output_name: toxigen-15000-llada
+  # - source: toxigen
+  #   config_name: train
+  #   split: train
+  #   sample_size: 20000
+  #   roberta_threshold: 0.8
+  #   output_name: toxigen-20000-llada
+  # - source: toxigen
+  #   config_name: train
+  #   split: train
+  #   sample_size: 25000
+  #   roberta_threshold: 0.8
+  #   output_name: toxigen-25000-llada
+  # - source: toxigen
+  #   config_name: train
+  #   split: train
+  #   sample_size: 30000
+  #   roberta_threshold: 0.8
+  #   output_name: toxigen-30000-llada
+  # - source: toxigen
+  #   config_name: train
+  #   split: train
+  #   sample_size: 40000
+  #   roberta_threshold: 0.8
+  #   output_name: toxigen-40000-llada
+  # - source: toxigen
+  #   config_name: train
+  #   split: train
+  #   sample_size: 50000
+  #   roberta_threshold: 0.8
+  #   output_name: toxigen-50000-llada
+
+  # HarmBench results (flattened JSONL)
+  # - source: harmbench_jsonl
+  #   split: train
+  #   data_files:
+  #     train: ${oc.env:SCRATCH}/data/harmbench_results_initial_release/harmbench_flat.jsonl
+  #   unsafe_label_values: [1]
+  #   sample_size: 100
+  #   output_name: harmbench_flat-0100-llada
+  # - source: harmbench_jsonl
+  #   split: train
+  #   data_files:
+  #     train: ${oc.env:SCRATCH}/data/harmbench_results_initial_release/harmbench_flat.jsonl
+  #   unsafe_label_values: [1]
+  #   sample_size: 500
+  #   output_name: harmbench_flat-0500-llada
+  # - source: harmbench_jsonl
+  #   split: train
+  #   data_files:
+  #     train: ${oc.env:SCRATCH}/data/harmbench_results_initial_release/harmbench_flat.jsonl
+  #   unsafe_label_values: [1]
+  #   sample_size: 1000
+  #   output_name: harmbench_flat-1000-llada
+  # - source: harmbench_jsonl
+  #   split: train
+  #   data_files:
+  #     train: ${oc.env:SCRATCH}/data/harmbench_results_initial_release/harmbench_flat.jsonl
+  #   unsafe_label_values: [1]
+  #   sample_size: 1500
+  #   output_name: harmbench_flat-1500-llada
+  # - source: harmbench_jsonl
+  #   split: train
+  #   data_files:
+  #     train: ${oc.env:SCRATCH}/data/harmbench_results_initial_release/harmbench_flat.jsonl
+  #   unsafe_label_values: [1]
+  #   sample_size: 5000
+  #   output_name: harmbench_flat-5000-llada
+  # - source: harmbench_jsonl
+  #   split: train
+  #   data_files:
+  #     train: ${oc.env:SCRATCH}/data/harmbench_results_initial_release/harmbench_flat.jsonl
+  #   unsafe_label_values: [1]
+  #   sample_size: 10000
+  #   output_name: harmbench_flat-10000-llada

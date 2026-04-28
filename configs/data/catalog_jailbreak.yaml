@@ -1,0 +1,169 @@
+# @package data_catalog
+#
+# Jailbreak evaluation data catalog.
+# Used by the DiffuGuard and DIJA jailbreak evaluation pipelines
+# (configs/slurm/sbatch_eval_diffguard_jailbreak_*.yaml, sbatch_eval_dija_jailbreak.yaml).
+#
+# Dataset JSON files must be prepared in advance using scripts/setup_jailbreak_assets.py
+# and scripts/convert_jbb_to_diffuguard_json.py (for JBB) or the corresponding converter
+# for each benchmark.
+#
+# [Compute Canada] Set the JAILBREAK_DATA_ROOT env var to the directory containing
+# pre-converted jailbreak JSON files (e.g. $SCRATCH/jailbreak_datasets/).
+# All *_PROMPTS env vars below default to paths within that directory.
+#
+# Required env vars (set in your sbatch or environment file):
+#   JAILBREAK_DATA_ROOT   — root directory for jailbreak prompt JSON files
+#   UNSAFE_ARTIFACT_ROOT  — root directory for unsafe reference tensors
+#
+sets:
+  jailbreak_diffuguard_jbb:
+    name: jailbreak_diffuguard_jbb
+    description: JBB harmful prompts (DiffuGuard format)
+    config_name: config
+    dataset_json: ${oc.env:JBB_PROMPTS,${oc.env:JAILBREAK_DATA_ROOT,/scratch}/jbb_behaviors_harmful_diffuguard.json}
+    dija_attack_prompt: ${oc.env:JBB_DIJA_PROMPTS,${oc.env:JAILBREAK_DATA_ROOT,/scratch}/jbb_behaviors_harmful_refined.json}
+    prompt_limit: null
+    unconditional_samples: 0
+    experiment_slug: diffuguard_jbb
+    skip_baseline: false
+    slurm:
+      baseline:
+        array: "0-0"
+        time: 0-04:00
+        mem: 32G
+      safe:
+        array: "0-0"
+        time: 0-04:00
+        mem: 32G
+      score:
+        array: "0-0"
+        time: 0-04:00
+        mem: 32G
+    safety:
+      artifact_root: ${oc.env:UNSAFE_ARTIFACT_ROOT,/scratch/safe-text-diffusion/artifacts/unsafe_artifacts}
+      artifact_names:
+        - harmbench_flat-1000-llada
+        - real-toxicity-prompts-1000-llada
+
+  jailbreak_dija_xstest:
+    name: jailbreak_dija_xstest
+    description: XSTest prompts (DIJA-compatible JSON list)
+    config_name: config
+    dataset_json: ${oc.env:XSTEST_PROMPTS,${oc.env:JAILBREAK_DATA_ROOT,/scratch}/xstest_prompts_dija.json}
+    prompt_limit: null
+    unconditional_samples: 0
+    experiment_slug: dija_xstest
+    skip_baseline: false
+    slurm:
+      baseline:
+        array: "0-0"
+        time: 0-04:00
+        mem: 32G
+      safe:
+        array: "0-0"
+        time: 0-04:00
+        mem: 32G
+    safety:
+      artifact_root: ${oc.env:UNSAFE_ARTIFACT_ROOT,/scratch/safe-text-diffusion/artifacts/unsafe_artifacts}
+      artifact_names:
+        - harmbench_flat-1000-llada
+        - real-toxicity-prompts-1000-llada
+
+  jailbreak_diffuguard_advbench:
+    name: jailbreak_diffuguard_advbench
+    description: AdvBench prompts (DiffuGuard format JSON list)
+    config_name: config
+    dataset_json: ${oc.env:ADVBENCH_PROMPTS,${oc.env:JAILBREAK_DATA_ROOT,/scratch}/advbench_prompts_diffuguard.json}
+    prompt_limit: null
+    unconditional_samples: 0
+    experiment_slug: diffuguard_advbench
+    skip_baseline: false
+    slurm:
+      baseline:
+        array: "0-0"
+        time: 0-04:00
+        mem: 32G
+      safe:
+        array: "0-0"
+        time: 0-04:00
+        mem: 32G
+    safety:
+      artifact_root: ${oc.env:UNSAFE_ARTIFACT_ROOT,/scratch/safe-text-diffusion/artifacts/unsafe_artifacts}
+      artifact_names:
+        - harmbench_flat-1000-llada
+        - real-toxicity-prompts-1000-llada
+
+  jailbreak_diffuguard_harmbench:
+    name: jailbreak_diffuguard_harmbench
+    description: HarmBench prompts (DiffuGuard format JSON list)
+    config_name: config
+    dataset_json: ${oc.env:HARMBENCH_PROMPTS,${oc.env:JAILBREAK_DATA_ROOT,/scratch}/harmbench_prompts_diffuguard.json}
+    dija_attack_prompt: ${oc.env:HARMBENCH_DIJA_PROMPTS,${oc.env:JAILBREAK_DATA_ROOT,/scratch}/harmbench_behaviors_text_all_refined.json}
+    prompt_limit: null
+    unconditional_samples: 0
+    experiment_slug: diffuguard_harmbench
+    skip_baseline: false
+    slurm:
+      baseline:
+        array: "0-0"
+        time: 0-04:00
+        mem: 32G
+      safe:
+        array: "0-0"
+        time: 0-04:00
+        mem: 32G
+    safety:
+      artifact_root: ${oc.env:UNSAFE_ARTIFACT_ROOT,/scratch/safe-text-diffusion/artifacts/unsafe_artifacts}
+      artifact_names:
+        - harmbench_flat-1000-llada
+        - real-toxicity-prompts-1000-llada
+
+  jailbreak_diffuguard_strongreject:
+    name: jailbreak_diffuguard_strongreject
+    description: StrongReject prompts (DiffuGuard format JSON list)
+    config_name: config
+    dataset_json: ${oc.env:STRONGREJECT_PROMPTS,${oc.env:JAILBREAK_DATA_ROOT,/scratch}/strongreject_prompts_diffuguard.json}
+    dija_attack_prompt: ${oc.env:STRONGREJECT_DIJA_PROMPTS,${oc.env:JAILBREAK_DATA_ROOT,/scratch}/strongreject_prompts_refined.json}
+    prompt_limit: null
+    unconditional_samples: 0
+    experiment_slug: diffuguard_strongreject
+    skip_baseline: false
+    slurm:
+      baseline:
+        array: "0-0"
+        time: 0-04:00
+        mem: 32G
+      safe:
+        array: "0-0"
+        time: 0-04:00
+        mem: 32G
+    safety:
+      artifact_root: ${oc.env:UNSAFE_ARTIFACT_ROOT,/scratch/safe-text-diffusion/artifacts/unsafe_artifacts}
+      artifact_names:
+        - harmbench_flat-1000-llada
+        - real-toxicity-prompts-1000-llada
+
+  jailbreak_diffuguard_wildjailbreak:
+    name: jailbreak_diffuguard_wildjailbreak
+    description: WildJailbreak prompts (DiffuGuard format JSON list)
+    config_name: config
+    dataset_json: ${oc.env:WILDJAILBREAK_PROMPTS,${oc.env:JAILBREAK_DATA_ROOT,/scratch}/wildjailbreak_prompts_diffuguard.json}
+    prompt_limit: 500  # WildJailbreak has ~260k prompts; cap at 500 for eval
+    unconditional_samples: 0
+    experiment_slug: diffuguard_wildjailbreak
+    skip_baseline: false
+    slurm:
+      baseline:
+        array: "0-0"
+        time: 0-04:00
+        mem: 32G
+      safe:
+        array: "0-0"
+        time: 0-04:00
+        mem: 32G
+    safety:
+      artifact_root: ${oc.env:UNSAFE_ARTIFACT_ROOT,/scratch/safe-text-diffusion/artifacts/unsafe_artifacts}
+      artifact_names:
+        - harmbench_flat-1000-llada
+        - real-toxicity-prompts-1000-llada

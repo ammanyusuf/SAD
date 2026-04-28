@@ -1,0 +1,55 @@
+# MDLM pipeline with filtering baselines for ICML 2026 rebuttal.
+# Adds posthoc_filter, best_of_n, and fk_steering runs in addition to baseline/SAD.
+# Set LLAMAGUARD_CHECKPOINT_PATH env var before submitting (points to LlamaGuard checkpoint).
+
+data_catalog: configs/data/catalog_feb_06_mdlm_trillium.yaml
+
+run:
+  python: python
+  config_name: config
+  output_root: /home/ammany/scratch/results/prompt_pipeline
+  slug_prefix: sbatch_prompt
+  run_id_prefix: sbatch_prompt
+  model_name: mdlm-0p5b
+  model_checkpoint: ${oc.env:CHECKPOINT_PATH,''}
+  tokenizer_name: ${oc.env:TOKENIZER_PATH,''}
+  safety_etas: [0.5]
+  semantic_weight: ${oc.env:SEMANTIC_WEIGHT,1.0}
+  semantic_temp: ${oc.env:SEMANTIC_TEMP,1.0}
+  semantic_sigma: ${oc.env:SEMANTIC_SIGMA,null}
+  semantic_checkpoint: ${oc.env:CHECKPOINT_PATH,''}
+  semantic_embed_attr: ${oc.env:MDLM_EMBED_ATTR,''}
+  gen:
+    sampling_steps: 1024
+    max_new_tokens: 1024
+  critical_steps: [null]
+  t_start: [875]
+  t_end: [1000]
+  base_overrides: []
+  # --- Rebuttal baseline variants ---
+  extra_baselines: [posthoc_filter, best_of_n, fk_steering]  #note, consider fk_steering excluded: too slow (batch_size=1 required)
+  posthoc_filter_n: 8      # generate N, keep first safe (fallback: least-unsafe)
+  best_of_n_n: 8           # generate N, keep safest by LlamaGuard score
+  fk_k_particles: 8        # FK Steering: number of parallel particles (paper best: k=8)
+  # FK Steering paper-optimal defaults (set via env or override):
+  # FK_RESAMPLE_FREQ=20  (resample every 20 steps = 50 resamples over 1000 steps)
+  # FK_NUM_X0_SAMPLES=16 ("many r_phi" variant, best in paper)
+  # FK_LAMBDA=10.0       (reward temperature)
+  # FK_REWARD_TRIM_LEN=50
+  score:
+    enabled: true
+    config_name: config
+    classifier: llamaguard
+    model: mdlm-0p5b
+    batch_size: 8
+    max_new_tokens: 32
+    force: true
+    dry_run: false
+    compute_perplexity: true
+    perplexity_model_name: gpt2-large
+    perplexity_model_path_overwrite: null
+
+datasets:
+  # - use: beavertails
+  - use: realtoxicity
+  # - use: toxigen

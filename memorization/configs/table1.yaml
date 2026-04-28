@@ -1,0 +1,96 @@
+# memorization/configs/table1.yaml
+# Hyperparameters for replicating Table 1 of
+# "Characterizing Memorization in Diffusion Language Models" (Luo et al. 2025).
+#
+# ${VAR} placeholders are expanded from environment variables at runtime.
+# On Compute Canada, set up the environment first:
+#
+#   source scripts/env_profile.sh dlm-memorization
+#   python experiments/replicate_table1.py --config memorization/configs/table1.yaml --debug
+#
+# For a full run (all models, all PII types):
+#   python experiments/replicate_table1.py --config memorization/configs/table1.yaml
+
+# ---------------------------------------------------------------------------
+# Data
+# ---------------------------------------------------------------------------
+data:
+  # Downloaded/cached here; ${MEMORIZATION_DATA_DIR} set by env_profile.sh
+  enron_dir: "${MEMORIZATION_DATA_DIR}/enron"
+  # dataset_source controls which HF dataset is used:
+  #   "corbt"  — corbt/enron-emails (~517k emails, real PII) — required for Table 1
+  #   "aeslc"  — Yale-LILY/aeslc (~18k emails, no PII)       — pipeline testing only
+  dataset_source: "corbt"
+  pii_types: ["email", "phone"]
+  n_samples: 3000                # per PII type (paper uses 3,000)
+  prefix_max_tokens: 100         # context window (paper: 100 tokens)
+  seed: 42
+
+# ---------------------------------------------------------------------------
+# Models to evaluate
+# ---------------------------------------------------------------------------
+models:
+  # ---- MDLM: Wikipedia fine-tuned (702-1250000.ckpt) ----
+  - name: "mdlm-wiki"
+    family: "mdlm"
+    # checkpoint set by $CHECKPOINT_PATH from env_profile.sh dlm-memorization
+    checkpoint: "${CHECKPOINT_PATH}"
+    tokenizer: "${TOKENIZER_PATH}"
+    # Path to the MDLM Hydra config (set by $MODEL_CONFIG_PATH)
+    mdlm_config: "${MODEL_CONFIG_PATH}"
+    # Optional Hydra overrides, e.g. "data=wikitext,sampling.steps=128"
+    # Set via $MDLM_CONFIG_OVERRIDES in env_profile.sh or override on CLI
+    mdlm_config_overrides: "${MDLM_CONFIG_OVERRIDES}"
+    backend: "mdlm"
+    precision: "bf16"
+
+  # ---- ARM baseline: GPT-2 Large ----
+  - name: "gpt2-large"
+    family: "arm"
+    checkpoint: "${HF_MODELS_CACHE}/gpt2-large"
+    tokenizer: "${HF_MODELS_CACHE}/gpt2-large"
+    backend: "arm"
+    precision: "fp32"
+
+# To add LLaDA-8B-Base (source scripts/env_profile.sh llada first):
+#  - name: "llada-8b-base"
+#    family: "llada"
+#    checkpoint: "${HF_MODELS_CACHE}/LLaDA-8B-Base"
+#    tokenizer: "${HF_MODELS_CACHE}/LLaDA-8B-Base"
+#    mask_id: 126336
+#    backend: "llada"
+#    precision: "bf16"
+
+# ---------------------------------------------------------------------------
+# Extraction framework hyperparameters
+# ---------------------------------------------------------------------------
+extraction:
+  R: 512                    # independent sampling trials (paper: 512)
+  N_values: [1, 2, 5, 10]   # denoising steps to sweep (paper also uses |M|, added at runtime)
+  mask_ratio: null          # null = prefix-conditioned masking (suffix = PII)
+  query_budget: 10000       # max queries (paper: 10,000)
+  p_values: [0.5, 0.99]     # target extraction probabilities
+  epsilon_values: [0]       # 0 = exact match; add e.g. 1,2 for relaxed metric
+  trial_batch_size: 16      # parallel trials per forward pass; reduce if OOM
+  # Paper's recover algorithm: "origin" (random transfer) or "greddy" (confidence-ranked)
+  alg: "origin"
+  temperature: 1.0          # Gumbel temperature (paper: 1.0)
+  recover_eps: 1.0e-3       # minimum timestep in continuous schedule (paper: 1e-3)
+
+# ---------------------------------------------------------------------------
+# Output
+# ---------------------------------------------------------------------------
+output:
+  dir: "${MEMORIZATION_RESULTS_DIR}/table1"
+  save_raw_pz: true
+  save_format: "json"
+  wandb_project: null
+  wandb_entity: null
+
+# ---------------------------------------------------------------------------
+# Debug mode (--debug flag overrides these)
+# ---------------------------------------------------------------------------
+debug:
+  n_examples: 10
+  R: 32
+  N_values: [1, 5]

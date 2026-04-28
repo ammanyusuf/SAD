@@ -1,0 +1,61 @@
+# Slurm pipeline config for the main safety evaluation (MDLM).
+# Runs generation + scoring for all three benchmark datasets (BeaverTails, RealToxicityPrompts, ToxiGen).
+#
+# [Compute Canada] Submit via:
+#   python src/slurm/submit_sbatch_experiments.py \
+#     --config configs/slurm/sbatch_prompt_pipeline.yaml \
+#     --repo-root "$REPO_ROOT"
+#
+# Required env vars:
+#   CHECKPOINT_PATH       — path to MDLM model checkpoint (.ckpt)
+#   TOKENIZER_PATH        — path to tokenizer directory (e.g. gpt2-large)
+#   UNSAFE_ARTIFACT_ROOT  — root directory for pre-built unsafe reference tensors
+#   RESULTS_ROOT          — where to write generation + scoring outputs
+#
+# See src/slurm/README.md for the full env var reference.
+
+data_catalog: configs/data/catalog.yaml
+
+run:
+  python: python
+  config_name: config
+  output_root: ${oc.env:RESULTS_ROOT,/scratch}/prompt_pipeline
+  slug_prefix: sbatch_prompt
+  run_id_prefix: sbatch_prompt
+  model_name: mdlm-0p5b
+  model_checkpoint: ${oc.env:CHECKPOINT_PATH,''}
+  tokenizer_name: ${oc.env:TOKENIZER_PATH,''}
+  # Safety guidance sweep: eta controls repellency strength. Values sweep Figure 2.
+  safety_etas: [0.1, 0.5, 0.75, 1, 2, 4, 8]
+  semantic_weight: ${oc.env:SEMANTIC_WEIGHT,1.0}
+  semantic_temp: ${oc.env:SEMANTIC_TEMP,1.0}
+  semantic_sigma: ${oc.env:SEMANTIC_SIGMA,null}
+  semantic_checkpoint: ${oc.env:CHECKPOINT_PATH,''}
+  semantic_embed_attr: ${oc.env:MDLM_EMBED_ATTR,''}
+  gen:
+    sampling_steps: 1024
+    max_new_tokens: 1024
+  # Guidance window: [t_start, t_end) in diffusion timesteps (0=clean, T=fully masked).
+  # Values here correspond to the last 25% of the denoising schedule (late steps).
+  critical_steps: [null]  # set to a list of step indices to override the window below
+  t_start: [750, 875]
+  t_end: [875, 1000]
+  base_overrides: []
+  score:
+    enabled: true
+    config_name: config
+    classifier: llamaguard
+    model: mdlm-0p5b
+    batch_size: 8
+    max_new_tokens: 32
+    force: true
+    dry_run: false
+
+    compute_perplexity: true
+    perplexity_model_name: gpt2-large
+    perplexity_model_path_overwrite: null
+
+datasets:
+  - use: beavertails
+  - use: realtoxicity
+  - use: toxigen

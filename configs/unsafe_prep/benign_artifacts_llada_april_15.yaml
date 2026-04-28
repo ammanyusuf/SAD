@@ -1,0 +1,52 @@
+tokenizer_name_or_path: ${oc.env:TOKENIZER_PATH,''}
+max_length: 1024
+shard_size: 1024
+seed: 1
+output_dir: ${oc.env:UNSAFE_OUTPUT_ROOT,artifacts/unsafe_artifacts}
+mix_equal_datasets: false
+mix_shuffle: true
+
+# ── Benign / "safe" control artifacts ─────────────────────────────────────────
+#
+# These are negative-control artifacts: sequences drawn from the SAFE side of
+# each dataset.  Running SDEN with these should *not* reduce ASR (and may
+# increase it or hurt quality), which isolates that artifact content — not just
+# the act of applying repellency — drives the safety improvements we observe.
+#
+# Selection criteria per source
+# ──────────────────────────────
+# BeaverTails : is_safe=True  (the dataset already has a binary is_safe flag)
+# RTP         : continuation toxicity_score < 0.1  (well below the unsafe threshold
+#               of 0.5 used for the unsafe artifact; avoids near-boundary examples)
+# ToxiGen     : roberta_prediction < 0.2  (low hate-speech score; complement of the
+#               unsafe threshold of 0.8 used for the unsafe artifact)
+
+datasets:
+  # ── BeaverTails benign ──────────────────────────────────────────────────────
+  - source: beavertails
+    split: 330k_train
+    sample_size: 1000
+    prompt_is_safe: true          # BeaverTailsAdapter flag: select is_safe==True rows
+    output_name: beavertails-benign-1000-llada
+
+  # ── RealToxicityPrompts benign ──────────────────────────────────────────────
+  # toxicity_threshold=0.0 disables the default minimum-toxicity filter.
+  # toxicity_threshold_max=0.1 keeps only continuations with max toxicity ≤ 0.1
+  # (well below the unsafe threshold of 0.5 used for the unsafe artifact).
+  - source: real-toxicity-prompts
+    split: train
+    sample_size: 1000
+    toxicity_threshold: 0.0           # disable default min filter
+    toxicity_threshold_max: 0.1       # new upper-bound filter (benign continuations only)
+    output_name: real-toxicity-prompts-benign-1000-llada
+
+  # ── ToxiGen benign ─────────────────────────────────────────────────────────
+  # prompt_label=0 selects the non-hateful half of the ToxiGen training split.
+  # roberta_threshold is left unset (None) so we keep all low-hate examples
+  # rather than applying a conflicting lower-bound filter.
+  - source: toxigen
+    config_name: train
+    split: train
+    sample_size: 1000
+    prompt_label: 0               # ToxigenAdapter flag: keep non-hateful prompts
+    output_name: toxigen-benign-1000-llada

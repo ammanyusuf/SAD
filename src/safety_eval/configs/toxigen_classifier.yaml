@@ -1,0 +1,16 @@
+defaults:
+  - _self_
+
+generations_path: change_my_path_please
+text_key: completion
+model_path: change_my_path_please
+threshold: 0.5
+batch_size: 16
+device: gpu
+output_path: ${hydra:run.dir}/toxigen_classifier_metrics.json
+
+hydra:
+  run:
+    dir: ${oc.env:SCRATCH,${hydra:runtime.cwd}}/eval_runs/toxigen_classifier/${now:%Y%m%d_%H%M%S}
+  job:
+    chdir: true

@@ -1,0 +1,46 @@
+# Slurm config for building unsafe reference tensors.
+# Run this once before launching the generation pipeline to create the unsafe_artifacts/ directory.
+#
+# [Compute Canada] Submit via:
+#   python src/slurm/submit_sbatch_unsafe_prep.py \
+#     --config configs/slurm/unsafe_prep_submit.yaml \
+#     --repo-root "$REPO_ROOT"
+#
+# Required env vars:
+#   CHECKPOINT_PATH        — path to the model (used as the encoder for semantic caching)
+#   TOKENIZER_PATH         — path to the tokenizer directory
+#   UNSAFE_OUTPUT_ROOT     — where to write the unsafe reference tensors
+#   SCRATCH                — cluster scratch directory (Compute Canada: $SCRATCH)
+#
+# Optional env vars (override defaults below):
+#   UNSAFE_MAX_LENGTH      — max token length for reference sequences (default: 1024)
+#   UNSAFE_SHARD_SIZE      — shard size for tensor building (default: 1024)
+#   UNSAFE_SEED            — random seed (default: 1)
+
+sweep_config: configs/unsafe_prep/unsafe_prompt_sweep.yaml
+jobs: 1
+python: python
+
+# Where to write unsafe tensors.
+output_root: ${oc.env:UNSAFE_OUTPUT_ROOT,${oc.env:SCRATCH,/scratch}/safe-text-diffusion/artifacts/unsafe_artifacts}
+# Tokenizer for dataset filtering/encoding. Must match the model's tokenizer exactly.
+tokenizer: ${oc.env:TOKENIZER_PATH,${oc.env:HF_MODELS_CACHE,/scratch/hf_models}/LLaDA-8B-Base}
+
+# Optional overrides for the tensor builder.
+max_length: ${oc.env:UNSAFE_MAX_LENGTH,1024}
+shard_size: ${oc.env:UNSAFE_SHARD_SIZE,1024}
+seed: ${oc.env:UNSAFE_SEED,1}
+
+# Semantic cache: encodes the unsafe reference set with the model's own embeddings.
+# This enables the semantic gating component of the safe denoiser.
+# provider: hf uses a HuggingFace AutoModel as the encoder (recommended for LLaDA/Dream).
+semantic_cache:
+  enabled: true
+  provider: hf
+  checkpoint: ${oc.env:CHECKPOINT_PATH,${oc.env:HF_MODELS_CACHE,/scratch/hf_models}/LLaDA-8B-Base}
+  encoder: ${oc.env:CHECKPOINT_PATH,${oc.env:HF_MODELS_CACHE,/scratch/hf_models}/LLaDA-8B-Base}
+  tokenizer: ${oc.env:TOKENIZER_PATH,${oc.env:HF_MODELS_CACHE,/scratch/hf_models}/LLaDA-8B-Base}
+  model_config: null
+  mdlm_embed_attr: null
+  batch_size: 8
+  device: cuda

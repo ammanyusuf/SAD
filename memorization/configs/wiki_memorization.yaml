@@ -1,0 +1,99 @@
+# memorization/configs/wiki_memorization.yaml
+# Measure verbatim memorization of WikiText-103 training sequences in MDLM.
+#
+# Unlike Table 1 (PII extraction), here the "secret" is any verbatim
+# training sequence: given prefix k tokens, can the model reconstruct
+# the next n tokens?
+#
+# Setup:
+#   source scripts/env_profile.sh dlm-memorization
+#   python experiments/measure_wiki_memorization.py \
+#     --config memorization/configs/wiki_memorization.yaml --debug
+
+# ---------------------------------------------------------------------------
+# Data
+# ---------------------------------------------------------------------------
+data:
+  # WikiText-103 cache dir (JSONL will be written here on first run)
+  data_dir: "${MEMORIZATION_DATA_DIR}/wikitext"
+
+  # HuggingFace split to draw sequences from.
+  # Use "train" — the model was trained on this split.
+  # Use "validation" for a control experiment (should show much lower memorization).
+  split: "train"
+
+  n_samples: 1000            # documents/windows to evaluate  (paper uses 3000 for PII)
+
+  # Which masking mode(s) to run:
+  #   "random"     — paper-aligned (Section 6.2): last tail_len tokens, mask_ratio
+  #                  fraction scattered randomly, independent per trajectory.
+  #   "contiguous" — AR-style: fixed prefix_tokens + suffix_tokens window,
+  #                  last suffix_tokens positions always masked (same as Table 1).
+  #   "both"       — run both modes back-to-back (default).
+  masking: "both"
+
+  # Random-mode params (used when masking = "random" or "both")
+  tail_len: 100              # last N tokens to take from each document (paper: 100)
+  mask_ratio: 0.2            # fraction of tokens to mask (paper: 0.2 → 20/100 tokens)
+
+  # Contiguous-mode params (used when masking = "contiguous" or "both")
+  prefix_tokens: 100         # context tokens (same as Table 1)
+  suffix_tokens: 10          # target tokens to reconstruct
+  strategy: "random"         # window sampling: "random" or "high_freq"
+  min_freq: 2                # only used when strategy="high_freq"
+
+  seed: 42
+
+# ---------------------------------------------------------------------------
+# Models to evaluate
+# ---------------------------------------------------------------------------
+models:
+  # ---- MDLM: Wikipedia-pretrained (the model being probed) ----
+  - name: "mdlm-wiki"
+    family: "mdlm"
+    checkpoint: "${CHECKPOINT_PATH}"
+    tokenizer: "${TOKENIZER_PATH}"
+    mdlm_config: "${MODEL_CONFIG_PATH}"
+    mdlm_config_overrides: "${MDLM_CONFIG_OVERRIDES}"
+    backend: "mdlm"
+    precision: "bf16"
+
+  # ---- GPT-2 Large (ARM baseline — also trained on web/wiki text) ----
+  - name: "gpt2-large"
+    family: "arm"
+    checkpoint: "${HF_MODELS_CACHE}/gpt2-large"
+    tokenizer: "${HF_MODELS_CACHE}/gpt2-large"
+    backend: "arm"
+    precision: "fp32"
+
+# ---------------------------------------------------------------------------
+# Extraction framework hyperparameters
+# ---------------------------------------------------------------------------
+extraction:
+  R: 512                        # independent MC trajectories (paper: 64–512)
+  # Denoising steps to sweep (paper: 1, 2, 5, 10, max=|M|).
+  # N=|M| (mask_count = tail_len * mask_ratio = 20) is always added automatically.
+  steps_list: [1, 2, 5, 10]
+  query_budget: 10000           # max queries for (n,p)-discoverable extraction
+  p_values: [0.5, 0.99]         # target extraction probabilities
+  epsilon_values: [0, 1, 2]     # 0 = exact match; 1,2 = Hamming-relaxed
+  trial_batch_size: 16
+  alg: "origin"                 # "origin" (paper default) or "greddy"
+  temperature: 1.0
+  recover_eps: 1.0e-3
+
+# ---------------------------------------------------------------------------
+# Output
+# ---------------------------------------------------------------------------
+output:
+  dir: "${MEMORIZATION_RESULTS_DIR}/wiki_memorization"
+  save_raw_pz: true
+  save_format: "json"
+
+# ---------------------------------------------------------------------------
+# Debug mode (--debug flag)
+# ---------------------------------------------------------------------------
+debug:
+  n_examples: 20
+  R: 32
+  steps_list: [1, 5]

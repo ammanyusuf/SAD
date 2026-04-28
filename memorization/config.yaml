@@ -1,0 +1,29 @@
+# memorization/config.yaml
+# Sweep configuration for denoising-trajectory extraction experiments.
+#
+# Environment variable placeholders (${VAR}) are expanded by submit.py
+# using os.path.expandvars before passing to sbatch.
+
+output_dir: "${RESULTS_ROOT}/memorization"
+
+slurm:
+  account: rrg-mijungp
+  time: "02:00:00"
+  mem: 64G
+  gpus: "a100:1"
+  cpus_per_task: 4
+  log_dir: "${SCRATCH}/logs/memorization"
+
+experiments:
+  - model: llada-instruct
+    checkpoint: "${HF_MODELS_CACHE}/LLaDA-8B-Instruct"
+    tokenizer: "${HF_MODELS_CACHE}/LLaDA-8B-Instruct"
+    steps: 128
+    max_new_tokens: 256
+    batch_size: 4
+    temperature: 0.0
+    precision: bf16
+    prompts_json: "${JAILBREAK_DATA_ROOT}/jbb_behaviors_harmful_dija.json"
+    prompt_limit: 100
+    num_shards: 4
+    seed: 42

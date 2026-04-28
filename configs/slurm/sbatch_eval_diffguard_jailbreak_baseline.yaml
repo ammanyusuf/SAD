@@ -1,0 +1,98 @@
+data_catalog: configs/data/catalog_jan_24_llada_jailbreak.yaml
+
+slurm:
+  baseline:
+    array: "0-0"
+    time: 0-08:00
+    mem: 32G
+  score:
+    array: "0-0"
+    time: 0-08:00
+    mem: 32G
+
+run:
+  script: eval_diffuguard.sh
+  config_name: config
+  output_root: ${oc.env:SCRATCH,/tmp}/safe-text-diffusion/results/jailbreak
+  slug_prefix: diffuguard
+  run_id_prefix: diffuguard
+  model_family: llada
+  model_variant: upstream
+  model_name: llada-8b-instruct
+  model_path: ${oc.env:CHECKPOINT_PATH,${oc.env:SCRATCH,/scratch}/hf_models/LLaDA-8B-Instruct}
+  baseline_only: true
+  apply_defense_variants_to_baseline: true
+  base_overrides:
+    - jailbreak.output_name=diffuguard_outputs.json
+    - jailbreak.cfg_scale=0.0
+    - jailbreak.remasking=low_confidence
+    - jailbreak.random_rate=0.0
+    - jailbreak.alpha0=0.3
+    - jailbreak.sp_mode=off
+    - jailbreak.sp_threshold=0.35
+    - jailbreak.refinement_steps=8
+    - jailbreak.remask_ratio=0.9
+    - jailbreak.suppression_value=1000000.0
+    - jailbreak.correct_only_first_block=true
+    - jailbreak.fill_all_masks=false
+    - jailbreak.debug_print=false
+    - jailbreak.auto_pick_gpu=true
+    - jailbreak.mask_id=126336
+    - jailbreak.mask_counts=36
+  gen:
+    sampling_steps: 64
+    max_new_tokens: 128
+    block_length: 128
+    temperature: 0.5
+  jailbreak_variants:
+    - name: zeroshot
+      label: zero-shot
+      attack_method: zeroshot
+      overrides:
+        - jailbreak.mask_counts=0 # this is needed as we don't want to fill up with pads
+    - name: pad
+      label: PAD
+      attack_method: PAD
+    - name: dija
+      label: DIJA
+      attack_method: DIJA
+    # - name: autodan
+    #   label: AutoDAN
+    #   attack_method: other
+    # - name: gcg
+    #   label: GCG
+    #   attack_method: other
+  jailbreak_defense_variants:
+    - name: self-reminder
+      label: self-reminder
+      defense_method: self-reminder
+    - name: ppl
+      label: ppl-filter
+      defense_method: ppl
+    - name: diffuguard
+      label: diffuguard-hidden-audit
+      defense_method: diffuguard
+      overrides:
+        - jailbreak.sp_mode=hidden
+  score:
+    config_name: config
+    track: safety
+    model: llada-8b-instruct
+    classifier: llamaguard
+    batch_size: 16
+    max_new_tokens: 32
+    force: true
+    dry_run: false
+    compute_perplexity: true
+
+datasets:
+  - use: jailbreak_diffuguard_jbb
+    skip_baseline: false
+  - use: jailbreak_diffuguard_harmbench
+    skip_baseline: false
+  - use: jailbreak_diffuguard_strongreject
+    skip_baseline: false
+  - use: jailbreak_diffuguard_advbench
+    skip_baseline: false
+  - use: jailbreak_diffuguard_wildjailbreak
+    skip_baseline: false

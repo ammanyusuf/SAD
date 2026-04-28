@@ -1,0 +1,15 @@
+# @package _global_
+defaults:
+  - /config
+  - _self_
+
+data:
+  dataset_json: ${data_catalog_test.sets.test_realtoxicity.dataset_json}
+  prompt_source: ${data_catalog_test.sets.test_realtoxicity.prompt_source}
+  limit: ${data_catalog_test.sets.test_realtoxicity.prompt_limit}
+
+gen:
+  unconditional_samples: ${data_catalog_test.sets.test_realtoxicity.unconditional_samples}
+
+io:
+  experiment_slug: ${data_catalog_test.sets.test_realtoxicity.experiment_slug}

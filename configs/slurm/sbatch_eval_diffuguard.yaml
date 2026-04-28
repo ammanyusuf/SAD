@@ -1,0 +1,45 @@
+run:
+  script: eval_diffuguard.sh
+  config_name: config
+  output_root: ${oc.env:SCRATCH,/tmp}/safe-text-diffusion/results/jailbreak
+  slug_prefix: diffuguard
+  run_id_prefix: diffuguard
+  model_path: ${oc.env:CHECKPOINT_PATH,${oc.env:SCRATCH,/scratch}/hf_models/LLaDA-8B-Instruct}
+  attack_prompt: ${oc.env:ATTACK_PROMPT,${oc.env:SCRATCH,/scratch}/jailbreak_datasets/jbb_behaviors_harmful_diffuguard.json}
+  output_name: diffuguard_outputs.json
+  jailbreak:
+    attack_method: zeroshot
+    defense_method: null
+    steps: 64
+    gen_length: 128
+    block_length: 128
+    temperature: 0.5
+    cfg_scale: 0.1
+    remasking: low_confidence
+    random_rate: 0.0
+    injection_step: null
+    alpha0: 0.3
+    sp_mode: off
+    sp_threshold: 0.35
+    refinement_steps: 8
+    remask_ratio: 0.9
+    suppression_value: 1000000.0
+    correct_only_first_block: true
+    fill_all_masks: false
+    debug_print: false
+    auto_pick_gpu: true
+    mask_id: 126336
+    mask_counts: 36
+  safety:
+    enabled: true
+    eta: 1.5
+    t_start: 0
+    t_end: 180
+    unsafe_artifact_root: ${oc.env:UNSAFE_ARTIFACT_ROOT,${oc.env:SCRATCH,/scratch}/safe-text-diffusion/artifacts/unsafe_artifacts}
+    unsafe_artifact_name: ${oc.env:UNSAFE_ARTIFACT_NAME,harmbench_flat-1000-llada}
+
+slurm:
+  time: "04:00:00"
+  mem: "32G"
+  gpus_per_node: a100:1
+  cpus_per_task: 1

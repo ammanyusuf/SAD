@@ -1,0 +1,29 @@
+run:
+  script: eval_dija.sh
+  config_name: config
+  output_root: ${oc.env:SCRATCH,/tmp}/safe-text-diffusion/results/jailbreak
+  slug_prefix: dija
+  run_id_prefix: dija
+  model_path: ${oc.env:CHECKPOINT_PATH,${oc.env:SCRATCH,/scratch}/hf_models/LLaDA-8B-Instruct}
+  attack_prompt: ${oc.env:ATTACK_PROMPT,${oc.env:SCRATCH,/scratch}/jailbreak_datasets/jbb_behaviors_harmful_dija.json}
+  output_name: dija_outputs.json
+  jailbreak:
+    attack_method: zeroshot
+    defense_method: null
+    steps: 128
+    gen_length: 128
+    mask_id: 126336
+    mask_counts: 36
+  safety:
+    enabled: true
+    eta: 1.5
+    t_start: 0
+    t_end: 180
+    unsafe_artifact_root: ${oc.env:UNSAFE_ARTIFACT_ROOT,''}
+    unsafe_artifact_name: ${oc.env:UNSAFE_ARTIFACT_NAME,''}
+
+slurm:
+  time: "04:00:00"
+  mem: "32G"
+  gpus_per_node: a100:1
+  cpus_per_task: 1

@@ -1,0 +1,53 @@
+data_catalog: configs/data/catalog_jan_24_llada_jailbreak.yaml
+
+run:
+  script: eval_dija.sh
+  config_name: config
+  output_root: ${oc.env:SCRATCH,/tmp}/safe-text-diffusion/results/jailbreak
+  slug_prefix: dija
+  run_id_prefix: dija
+  model_family: llada
+  model_variant: dija
+  model_name: llada-8b-instruct
+  model_path: ${oc.env:CHECKPOINT_PATH,${oc.env:SCRATCH,/scratch}/hf_models/LLaDA-8B-Instruct}
+  base_overrides:
+    - jailbreak.output_name=dija_outputs.json
+    - jailbreak.steps=32
+    - jailbreak.gen_length=512
+    - jailbreak.block_length=32
+    - jailbreak.temperature=0.2
+    - jailbreak.mask_id=126336
+    - jailbreak.mask_counts=36
+  safety_etas: [1.5]
+  t_start: [0]
+  t_end: [180]
+  jailbreak_variants:
+    - name: aim
+      label: AIM
+      attack_method: AIM
+    - name: pair
+      label: PAIR
+      attack_method: PAIR
+    - name: renellm
+      label: ReNeLLM
+      attack_method: ReNeLLM
+    - name: gcg
+      label: GCG
+      attack_method: GCG
+  jailbreak_defense_variants:
+    - name: self-reminder
+      label: self-reminder
+      defense_method: self-reminder
+    - name: rpo
+      label: rpo
+      defense_method: rpo
+
+datasets:
+  - use: jailbreak_dija_jbb
+    skip_baseline: true
+  - use: jailbreak_dija_harmbench
+    skip_baseline: true
+  - use: jailbreak_dija_strongreject
+    skip_baseline: true
+  - use: jailbreak_dija_xstest
+    skip_baseline: true

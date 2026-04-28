@@ -1,0 +1,64 @@
+# Slurm pipeline config for the main safety evaluation (LLaDA-8B-Base).
+# Runs generation + scoring for all three benchmark datasets (BeaverTails, RealToxicityPrompts, ToxiGen).
+#
+# [Compute Canada] Submit via:
+#   python src/slurm/submit_sbatch_experiments.py \
+#     --config configs/slurm/sbatch_prompt_pipeline_llada.yaml \
+#     --repo-root "$REPO_ROOT"
+#
+# Required env vars:
+#   CHECKPOINT_PATH       — path to the LLaDA-8B-Base model directory (HuggingFace format)
+#   TOKENIZER_PATH        — path to the tokenizer directory (same as checkpoint for LLaDA)
+#   UNSAFE_ARTIFACT_ROOT  — root directory for pre-built unsafe reference tensors
+#   RESULTS_ROOT          — where to write generation + scoring outputs
+#
+# See src/slurm/README.md for the full env var reference.
+
+data_catalog: configs/data/catalog.yaml
+
+run:
+  python: python
+  config_name: config
+  output_root: ${oc.env:RESULTS_ROOT,/scratch}/prompt_pipeline_llada
+  slug_prefix: llada
+  run_id_prefix: llada
+  model_family: llada
+  model_name: llada-8b-base
+  model_checkpoint: ${oc.env:CHECKPOINT_PATH,''}
+  tokenizer_name: ${oc.env:TOKENIZER_PATH,''}
+  semantic_weight: ${oc.env:SEMANTIC_WEIGHT,1.0}
+  semantic_temp: ${oc.env:SEMANTIC_TEMP,1.0}
+  semantic_sigma: ${oc.env:SEMANTIC_SIGMA,null}
+  semantic_checkpoint: ${oc.env:CHECKPOINT_PATH,''}
+  semantic_embed_attr: ${oc.env:MDLM_EMBED_ATTR,''}
+  gen:
+    sampling_steps: 256
+    max_new_tokens: 256
+    batch_size: 4
+    temperature: 0.0
+  # Safety guidance sweep: eta controls repellency strength. Values sweep Figure 2.
+  safety_etas: [0.1, 0.5, 0.75, 1, 2, 4, 8]
+  # Guidance window: [t_start, t_end) in diffusion timesteps (0=clean, T=fully masked).
+  # For LLaDA with 256 steps, t_start=0/t_end=18 corresponds to the final ~7% of denoising.
+  # NOTE: do not set t_start/t_end near the end of the schedule (high t values) — those steps
+  # have very few masks remaining and the hook has no effect.
+  t_start: [0, 32]
+  t_end: [18, 64]
+  score:
+    enabled: true
+    config_name: config
+    classifier: llamaguard
+    model: LLaDA-8B-Base
+    batch_size: 8
+    max_new_tokens: 64
+    force: true
+    dry_run: false
+    compute_perplexity: true
+    perplexity_model: gpt2-large
+    perplexity_batch_size: 4
+    perplexity_max_length: 1024
+
+datasets:
+  - use: beavertails
+  - use: realtoxicity
+  - use: toxigen

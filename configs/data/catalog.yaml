@@ -1,0 +1,238 @@
+# @package data_catalog
+#
+# Canonical data catalog for safety evaluation benchmarks.
+# Defines BeaverTails, RealToxicityPrompts, and ToxiGen prompt sets (with benign/unsafe variants).
+#
+# [Compute Canada] Key env vars (all paths default to $SCRATCH subdirectories):
+#   SCRATCH                — cluster scratch root (automatically set on Compute Canada)
+#   BEAVERTAILS_DATA_DIR   — path to BeaverTails HuggingFace dataset cache
+#   REALTOXICITY_DATA_DIR  — path to RealToxicityPrompts dataset cache
+#   TOXIGEN_DATA_DIR        — path to ToxiGen dataset cache
+#   UNSAFE_ARTIFACT_ROOT   — path to pre-built unsafe reference tensors
+#   UNSAFE_SEMANTIC_ROOT   — path to semantic embedding cache (defaults to <artifact_root>/semantic_refs)
+#   UNSAFE_PROTOTYPE_ROOT  — path to prototype tensors (defaults to <artifact_root>/prototypes)
+#
+# Build unsafe artifacts first with: python src/slurm/submit_sbatch_unsafe_prep.py
+sets:
+  beavertails:
+    name: beavertails
+    description: BeaverTails prompts
+    config_name: experiments/beavertails_prompts
+    dataset_json: null
+    prompt_source:
+      name: beavertails
+      params:
+        split: ${oc.env:BEAVERTAILS_SPLIT,330k_train}
+        data_dir: ${oc.env:BEAVERTAILS_DATA_DIR,${oc.env:SCRATCH,/scratch}/hf_datasets/BeaverTails}
+        prompt_is_safe: null
+    prompt_variants:
+      - name: benign
+        description: BeaverTails benign prompts (is_safe=true)
+        overrides:
+          - data.prompt_variant=benign
+          - data.prompt_source.params.prompt_is_safe=true
+      - name: unsafe
+        description: BeaverTails unsafe prompts (is_safe=false)
+        overrides:
+          - data.prompt_variant=unsafe
+          - data.prompt_source.params.prompt_is_safe=false
+    prompt_limit: 250
+    unconditional_samples: 0
+    experiment_slug: beavertails_prompts
+    slurm:
+      baseline:
+        array: "0-0"
+        time: 0-04:00
+      safe:
+        array: "0-0"
+        time: 0-05:00
+      score:
+        array: "0-0"
+        time: 0-06:00
+    safety:
+      artifact_root: ${oc.env:UNSAFE_ARTIFACT_ROOT,${oc.env:SCRATCH,/scratch}/safe-text-diffusion/artifacts/unsafe_artifacts}
+      artifact_names:
+        - beavertails-0100
+        - beavertails-0500
+        - beavertails-1000
+      semantic_ref_root: ${oc.env:UNSAFE_SEMANTIC_ROOT,${oc.env:UNSAFE_ARTIFACT_ROOT,${oc.env:SCRATCH,/scratch}/safe-text-diffusion/artifacts/unsafe_artifacts}/semantic_refs}
+      use_semantic_gating: false
+      semantic_weight: ${oc.env:SEMANTIC_WEIGHT,1.0}
+      cache_semantic_ref: true
+      semantic_checkpoint: ${oc.env:CHECKPOINT_PATH,''}
+      semantic_embed_attr: null
+      prototype_root: ${oc.env:UNSAFE_PROTOTYPE_ROOT,${oc.env:SCRATCH,/scratch}/safe-text-diffusion/artifacts/unsafe_artifacts/prototypes}
+      prototype_names:
+
+  beavertails_uncond:
+    name: beavertails_uncond
+    description: BeaverTails unconditional (500 samples)
+    config_name: experiments/beavertails_prompts
+    dataset_json: null
+    prompt_source:
+      name: beavertails
+      params:
+        split: ${oc.env:BEAVERTAILS_SPLIT,330k_train}
+        data_dir: ${oc.env:BEAVERTAILS_DATA_DIR,${oc.env:SCRATCH,/scratch}/hf_datasets/BeaverTails}
+    prompt_limit: 0
+    unconditional_samples: 500
+    experiment_slug: beavertails_prompts_uncond
+    slurm:
+      baseline:
+        array: "0-0"
+        time: 0-04:00
+      score:
+        array: "0-0"
+        time: 0-03:00
+
+  realtoxicity:
+    name: realtoxicity
+    description: RealToxicityPrompts baseline
+    config_name: experiments/realtoxicity_prompts
+    dataset_json: null
+    prompt_source:
+      name: real-toxicity-prompts
+      params:
+        split: ${oc.env:REALTOXICITY_SPLIT,train}
+        data_dir: ${oc.env:REALTOXICITY_DATA_DIR,${oc.env:SCRATCH,/scratch}/hf_datasets/real-toxicity-prompts}
+        toxicity_threshold: ${oc.env:REALTOXICITY_THRESHOLD,0.5}
+        prompt_score_min: null
+        prompt_score_max: null
+        prompt_variant: null
+    prompt_variants:
+      - name: benign
+        description: RealToxicityPrompts benign prompts (max<=0.3)
+        overrides:
+          - data.prompt_variant=benign
+          - data.prompt_source.params.prompt_score_max=0.3
+          - data.prompt_source.params.prompt_variant=benign
+      - name: unsafe
+        description: RealToxicityPrompts unsafe prompts (max>=0.7)
+        overrides:
+          - data.prompt_variant=unsafe
+          - data.prompt_source.params.prompt_score_min=0.7
+          - data.prompt_source.params.prompt_variant=unsafe
+    prompt_limit: 250
+    unconditional_samples: 0
+    experiment_slug: realtoxicity_prompts
+    slurm:
+      baseline:
+        array: "0-0"
+        time: 0-04:00
+      safe:
+        array: "0-0"
+        time: 0-05:00
+      score:
+        array: "0-0"
+        time: 0-06:00
+    safety:
+      artifact_root: ${oc.env:UNSAFE_ARTIFACT_ROOT,${oc.env:SCRATCH,/scratch}/safe-text-diffusion/artifacts/unsafe_artifacts}
+      artifact_names:
+        - real-toxicity-prompts-0100
+        - real-toxicity-prompts-0500
+        - real-toxicity-prompts-1000
+      semantic_ref_root: ${oc.env:UNSAFE_SEMANTIC_ROOT,${oc.env:UNSAFE_ARTIFACT_ROOT,${oc.env:SCRATCH,/scratch}/safe-text-diffusion/artifacts/unsafe_artifacts}/semantic_refs}
+      use_semantic_gating: false
+      semantic_weight: ${oc.env:SEMANTIC_WEIGHT,1.0}
+      cache_semantic_ref: true
+      semantic_checkpoint: ${oc.env:CHECKPOINT_PATH,''}
+      semantic_embed_attr: null
+      prototype_root: ${oc.env:UNSAFE_PROTOTYPE_ROOT,${oc.env:SCRATCH,/scratch}/safe-text-diffusion/artifacts/unsafe_artifacts/prototypes}
+      prototype_names:
+
+  realtoxicity_uncond:
+    name: realtoxicity_uncond
+    description: RealToxicityPrompts unconditional (500 samples)
+    config_name: experiments/realtoxicity_prompts
+    dataset_json: null
+    prompt_source:
+      name: real-toxicity-prompts
+      params:
+        split: ${oc.env:REALTOXICITY_SPLIT,train}
+        data_dir: ${oc.env:REALTOXICITY_DATA_DIR,${oc.env:SCRATCH,/scratch}/hf_datasets/real-toxicity-prompts}
+        toxicity_threshold: ${oc.env:REALTOXICITY_THRESHOLD,0.5}
+    prompt_limit: 0
+    unconditional_samples: 500
+    experiment_slug: realtoxicity_prompts_uncond
+    slurm:
+      baseline:
+        array: "0-0"
+        time: 0-04:00
+      score:
+        array: "0-0"
+        time: 0-03:00
+
+  toxigen:
+    name: toxigen
+    description: ToxiGen train prompts
+    config_name: experiments/toxigen_prompts
+    dataset_json: null
+    prompt_source:
+      name: toxigen
+      params:
+        split: ${oc.env:TOXIGEN_SPLIT,train}
+        data_dir: ${oc.env:TOXIGEN_DATA_DIR,${oc.env:SCRATCH,/scratch}/hf_datasets/toxigen}
+        config_name: ${oc.env:TOXIGEN_CONFIG,train}
+        roberta_threshold: ${oc.env:TOXIGEN_ROBERTA_THRESHOLD,0.8}
+        prompt_label: null
+    prompt_variants:
+      - name: benign
+        description: ToxiGen benign prompts (prompt_label=0)
+        overrides:
+          - data.prompt_variant=benign
+          - data.prompt_source.params.prompt_label=0
+      - name: unsafe
+        description: ToxiGen unsafe prompts (prompt_label=1)
+        overrides:
+          - data.prompt_variant=unsafe
+          - data.prompt_source.params.prompt_label=1
+    prompt_limit: 250
+    unconditional_samples: 0
+    experiment_slug: toxigen_prompts
+    slurm:
+      baseline:
+        array: "0-0"
+        time: 0-04:00
+      safe:
+        array: "0-0"
+        time: 0-06:00
+      score:
+        array: "0-0"
+        time: 0-06:00
+    safety:
+      artifact_root: ${oc.env:UNSAFE_ARTIFACT_ROOT,${oc.env:SCRATCH,/scratch}/safe-text-diffusion/artifacts/unsafe_artifacts}
+      artifact_names:
+        - toxigen-0100
+        - toxigen-0500
+        - toxigen-1000
+      semantic_ref_root: ${oc.env:UNSAFE_SEMANTIC_ROOT,${oc.env:UNSAFE_ARTIFACT_ROOT,${oc.env:SCRATCH,/scratch}/safe-text-diffusion/artifacts/unsafe_artifacts}/semantic_refs}
+      use_semantic_gating: true
+      semantic_weight: ${oc.env:SEMANTIC_WEIGHT,1.0}
+      cache_semantic_ref: true
+      semantic_checkpoint: ${oc.env:CHECKPOINT_PATH,''}
+      semantic_embed_attr: null
+      prototype_root: ${oc.env:UNSAFE_PROTOTYPE_ROOT,${oc.env:SCRATCH,/scratch}/safe-text-diffusion/artifacts/unsafe_artifacts/prototypes}
+      prototype_names:
+
+  toxigen_uncond:
+    name: toxigen_uncond
+    description: ToxiGen unconditional (500 samples)
+    config_name: experiments/toxigen_prompts
+    dataset_json: null
+    prompt_source:
+      name: toxigen
+      params:
+        split: ${oc.env:TOXIGEN_SPLIT,train}
+        data_dir: ${oc.env:TOXIGEN_DATA_DIR,${oc.env:SCRATCH,/scratch}/hf_datasets/toxigen}
+        config_name: ${oc.env:TOXIGEN_CONFIG,train}
+        roberta_threshold: ${oc.env:TOXIGEN_ROBERTA_THRESHOLD,0.8}
+    prompt_limit: 0
+    unconditional_samples: 500
+    experiment_slug: toxigen_prompts_uncond
+    slurm:
+      baseline:
+        array: "0-0"
+        time: 0-04:00
+      score:
+        array: "0-0"
+        time: 0-02:00

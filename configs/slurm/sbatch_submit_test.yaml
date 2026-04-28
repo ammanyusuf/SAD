@@ -1,0 +1,47 @@
+# Integration test config — runs a single eta on a tiny subset to validate the pipeline end-to-end.
+# Use this before launching a full sweep to confirm env var setup and model loading work correctly.
+#
+# [Compute Canada] Submit via:
+#   python src/slurm/submit_sbatch_experiments.py \
+#     --config configs/slurm/sbatch_submit_test.yaml \
+#     --repo-root "$REPO_ROOT" --integration-test
+
+data_catalog: configs/data/catalog_test.yaml
+
+run:
+  python: python
+  config_name: config
+  output_root: ${oc.env:RESULTS_ROOT,/scratch}/prompt_pipeline_test
+  slug_prefix: sbatch_prompt_test
+  run_id_prefix: sbatch_prompt_test
+  model_name: mdlm-0p5b
+  model_checkpoint: ${oc.env:CHECKPOINT_PATH,''}
+  tokenizer_name: ${oc.env:TOKENIZER_PATH,''}
+  safety_etas: [8]
+  semantic_weight: ${oc.env:SEMANTIC_WEIGHT,1.0}
+  semantic_temp: ${oc.env:SEMANTIC_TEMP,1.0}
+  semantic_sigma: ${oc.env:SEMANTIC_SIGMA,null}
+  semantic_checkpoint: ${oc.env:CHECKPOINT_PATH,''}
+  semantic_embed_attr: ${oc.env:MDLM_EMBED_ATTR,''}
+  gen:
+    sampling_steps: 1024
+    max_new_tokens: 1024
+  critical_steps: [null]
+  t_start: [750]
+  t_end: [875]
+  base_overrides: []
+  score:
+    enabled: true
+    config_name: config
+    classifier: llamaguard
+    model: mdlm-0p5b
+    batch_size: 8
+    max_new_tokens: 32
+    force: true
+    dry_run: false
+
+    compute_perplexity: true
+    perplexity_model_name: gpt2-large
+    perplexity_model_path_overwrite: null
+datasets:
+  - use: realtoxicity

@@ -1,0 +1,102 @@
+# Slurm pipeline config for LLaDA-8B-Base — April 15 artifact comparison.
+#
+# Extends sbatch_prompt_pipeline_llada.yaml with:
+#   1. Benign (safe) control artifacts for each dataset, so we can compare
+#      unsafe vs benign artifact SDEN directly.
+#   2. HarmBench flat artifact (cross-dataset, best jailbreak signal).
+#
+# New artifacts to build first (run once):
+#   python -m unsafe_prep.build_unsafe_artifacts \
+#     --config configs/unsafe_prep/benign_artifacts_llada_april_15.yaml \
+#     --out $UNSAFE_ARTIFACT_ROOT --force
+#
+# Then submit this pipeline:
+#   python src/slurm/submit_sbatch_experiments.py \
+#     --config configs/slurm/sbatch_prompt_pipeline_llada_april_15.yaml \
+#     --repo-root "$REPO_ROOT"
+#
+# Required env vars (same as sbatch_prompt_pipeline_llada.yaml):
+#   CHECKPOINT_PATH       — path to the LLaDA-8B-Base model directory
+#   TOKENIZER_PATH        — path to the tokenizer directory
+#   UNSAFE_ARTIFACT_ROOT  — root directory for pre-built unsafe reference tensors
+#   RESULTS_ROOT          — where to write generation + scoring outputs
+
+data_catalog: configs/data/catalog.yaml
+
+run:
+  python: python
+  config_name: config
+  output_root: ${oc.env:RESULTS_ROOT,/scratch}/prompt_pipeline_llada_april_15
+  slug_prefix: llada_apr15
+  run_id_prefix: llada_apr15
+  model_family: llada
+  model_name: llada-8b-base
+  model_checkpoint: ${oc.env:CHECKPOINT_PATH,''}
+  tokenizer_name: ${oc.env:TOKENIZER_PATH,''}
+  semantic_weight: ${oc.env:SEMANTIC_WEIGHT,1.0}
+  semantic_temp: ${oc.env:SEMANTIC_TEMP,1.0}
+  semantic_sigma: ${oc.env:SEMANTIC_SIGMA,null}
+  semantic_checkpoint: ${oc.env:CHECKPOINT_PATH,''}
+  semantic_embed_attr: ${oc.env:MDLM_EMBED_ATTR,''}
+  gen:
+    sampling_steps: 256
+    max_new_tokens: 256
+    batch_size: 4
+    temperature: 0.0
+  # Safety guidance sweep — same as baseline llada config.
+  safety_etas: [0.1, 0.5, 1, 2, 4]
+  # Guidance window: [t_start, t_end) in denoising steps.
+  t_start: [0, 32]
+  t_end: [18, 64]
+  score:
+    enabled: true
+    config_name: config
+    classifier: llamaguard
+    model: LLaDA-8B-Base
+    batch_size: 8
+    max_new_tokens: 64
+    force: true
+    dry_run: false
+    compute_perplexity: true
+    perplexity_model: gpt2-large
+    perplexity_batch_size: 4
+    perplexity_max_length: 1024
+
+# ── Dataset + artifact definitions ────────────────────────────────────────────
+#
+# Each dataset entry lists both unsafe and benign artifacts so a single pipeline
+# submission produces the full comparison table.
+#
+# Artifact naming convention:
+#   <source>-<N>-llada          — standard unsafe artifact (built by unsafe_prompt_sweep.yaml)
+#   <source>-benign-<N>-llada   — safe/benign control (built by benign_artifacts_llada_april_15.yaml)
+#   harmbench_flat-<N>-llada    — HarmBench jailbreak completions (best signal for jailbreak defense)
+
+datasets:
+  # ── BeaverTails ─────────────────────────────────────────────────────────────
+  # safety block merges with (and overrides) the catalog's safety section.
+  - use: beavertails
+    safety:
+      artifact_root: ${oc.env:UNSAFE_ARTIFACT_ROOT,${oc.env:SCRATCH,/scratch}/safe-text-diffusion/artifacts/unsafe_artifacts}
+      artifact_names:
+        - beavertails-1000-llada
+        - beavertails-benign-1000-llada
+        - harmbench_flat-1000-llada
+
+  # ── RealToxicityPrompts ─────────────────────────────────────────────────────
+  - use: realtoxicity
+    safety:
+      artifact_root: ${oc.env:UNSAFE_ARTIFACT_ROOT,${oc.env:SCRATCH,/scratch}/safe-text-diffusion/artifacts/unsafe_artifacts}
+      artifact_names:
+        - real-toxicity-prompts-1000-llada
+        - real-toxicity-prompts-benign-1000-llada
+        - harmbench_flat-1000-llada
+
+  # ── ToxiGen ─────────────────────────────────────────────────────────────────
+  - use: toxigen
+    safety:
+      artifact_root: ${oc.env:UNSAFE_ARTIFACT_ROOT,${oc.env:SCRATCH,/scratch}/safe-text-diffusion/artifacts/unsafe_artifacts}
+      artifact_names:
+        - toxigen-1000-llada
+        - toxigen-benign-1000-llada
+        - harmbench_flat-1000-llada

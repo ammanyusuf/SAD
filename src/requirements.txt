@@ -1,0 +1,37 @@
+torch # ==2.2.1 # note, set this to the most recent version for h100 nodes,
+# torchvision
+torchmetrics
+triton
+flash-attn # allow most recent version to be installed for h100 nodes
+# causal_conv1d # we don't need this
+datasets
+einops
+fsspec
+# git-lfs
+h5py
+hydra-core
+ipdb
+lightning
+# mamba-ssm # uninstall this, we don't need it, this will cause a 
+notebook
+# nvitop
+omegaconf
+packaging
+pandas
+rich
+seaborn
+scikit-learn
+scipy
+# timm # timm is not needed
+transformers
+evaluate
+bert-score
+mauve-text # NOTE: load faiss on the compute canada node in order to install this
+wandb
+accelerate
+tiktoken
+blobfile
+pytest
+pydantic
+pynvml
+tqdm

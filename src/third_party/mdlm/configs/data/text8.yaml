@@ -1,0 +1,7 @@
+# TODO: When using this dataset, set model.length = 256 to match D3PM setup
+train: text8
+valid: text8
+tokenizer_name_or_path: /scratch/ammany/hf_models/gpt2-large
+cache_dir: /scratch/ammany/data/text-diffusion
+wrap: True
+streaming: False
