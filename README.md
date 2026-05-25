@@ -1,13 +1,13 @@
 # Safe Denoiser for Discrete Diffusion Language Models
 
 <p align="center">
-  <a href="https://arxiv.org/abs/XXXX.XXXXX">[Paper]</a> &nbsp;|&nbsp;
+  <a href="https://arxiv.org/abs/2605.08116">[Paper]</a> &nbsp;|&nbsp;
   <a href="#citation">[Citation]</a> &nbsp;|&nbsp;
   <a href="#quick-start">[Quick Start]</a>
 </p>
 
 > **Safe Denoiser for Discrete Diffusion Language Models**
-> [Amman Yusuf](ammanyusuf.com), [Zhejun Jiang], [Mijung Park]
+> [Amman Yusuf](ammanyusuf.com), [Zhejun Jiang], [Mijung Park](https://www.cs.ubc.ca/~mijungp/)
 > [Preprint, 2026]
 
 ---
@@ -301,17 +301,20 @@ python src/slurm/submit_sbatch_experiments.py \
 If you find this work useful, please cite:
 
 ```bibtex
-@article{PLACEHOLDER,
-  title   = {Safe Denoiser for Discrete Diffusion Language Models},
-  author  = {Yusuf, Amman and Jiang, Zhejun and Park, Mijung},
-  journal = {arXiv preprint arXiv:XXXX.XXXXX},
-  year    = {2026}
+@misc{yusuf2026safetyawaredenoisertextdiffusion,
+      title={The Safety-Aware Denoiser for Text Diffusion Models}, 
+      author={Amman Yusuf and Zhejun Jiang and Mijung Park},
+      year={2026},
+      eprint={2605.08116},
+      archivePrefix={arXiv},
+      primaryClass={cs.LG},
+      url={https://arxiv.org/abs/2605.08116}, 
 }
 ```
 
 ---
 
 <p align="center">
-  <a href="https://arxiv.org/abs/XXXX.XXXXX">[Paper]</a> &nbsp;|&nbsp;
+  <a href="https://arxiv.org/abs/2605.08116">[Paper]</a> &nbsp;|&nbsp;
   <a href="https://github.com/ammanyusuf/SAD">[Code]</a>
 </p>
