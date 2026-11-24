@@ -8,7 +8,7 @@
 
 > **Safe Denoiser for Discrete Diffusion Language Models**
 > [Amman Yusuf](ammanyusuf.com), [Zhejun Jiang], [Mijung Park](https://www.cs.ubc.ca/~mijungp/)
-> [Preprint, 2026]
+> [ICML, 2026]
 
 ---
 
@@ -301,15 +301,21 @@ python src/slurm/submit_sbatch_experiments.py \
 If you find this work useful, please cite:
 
 ```bibtex
-@misc{yusuf2026safetyawaredenoisertextdiffusion,
-      title={The Safety-Aware Denoiser for Text Diffusion Models}, 
-      author={Amman Yusuf and Zhejun Jiang and Mijung Park},
-      year={2026},
-      eprint={2605.08116},
-      archivePrefix={arXiv},
-      primaryClass={cs.LG},
-      url={https://arxiv.org/abs/2605.08116}, 
+@InProceedings{pmlr-v306-yusuf26a,
+  title = 	 {The Safety-Aware Denoiser for Text Diffusion Models},
+  author =       {Yusuf, Amman and Jiang, Zhejun and Park, Mijung},
+  booktitle = 	 {Proceedings of the 43rd International Conference on Machine Learning},
+  pages = 	 {152614--152644},
+  year = 	 {2026},
+  editor = 	 {Zhang, Tong and Dudik, Miroslav and Jaggi, Martin and Agarwal, Alekh and Li, Sharon and Schuurmans, Dale and Zhu, Jerry and Berkenkamp, Felix and Dong, Hanze and Bietti, Alberto},
+  volume = 	 {306},
+  series = 	 {Proceedings of Machine Learning Research},
+  month = 	 {06--11 Jul},
+  publisher =    {PMLR},
+  pdf = 	 {https://raw.githubusercontent.com/mlresearch/v306/main/assets/yusuf26a/yusuf26a.pdf},
+  url = 	 {https://proceedings.mlr.press/v306/yusuf26a.html},
 }
+
 ```
 
 ---
