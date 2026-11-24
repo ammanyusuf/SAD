@@ -14,7 +14,7 @@
 
 ## Overview
 
-We introduce **SAD (Safe Annealed Denoising)**, a training-free safety mechanism for Masked Discrete Language Models (MDLMs) such as [LLaDA](https://github.com/ML-GSAI/LLaDA), [Dream](https://github.com/Dream-org/Dream), and [MDLM](https://github.com/kuleshov-group/mdlm). SAD steers token predictions **away from unsafe content during sampling** — no retraining, no fine-tuning, no classifier in the loop.
+We introduce **SAD (Safety Aware Denoising)**, a training-free safety mechanism for Masked Discrete Language Models (MDLMs) such as [LLaDA](https://github.com/ML-GSAI/LLaDA), [Dream](https://github.com/Dream-org/Dream), and [MDLM](https://github.com/kuleshov-group/mdlm). SAD steers token predictions **away from unsafe content during sampling** — no retraining, no fine-tuning, no classifier in the loop.
 
 The core idea: at each denoising step within a guidance window, we compute the expected denoised embedding under the base model and a pre-built *unsafe negation set*, then push the output embedding away from the unsafe direction by strength β*:
 
